@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   CloudUpload, 
@@ -15,15 +15,22 @@ import {
   Sun,
   Moon,
   LogOut,
-  Files
+  Files,
+  Settings,
+  Info
 } from 'lucide-angular';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
+import { SettingsService } from '../services/settings.service';
+import { StatsService } from '../services/stats.service';
+import { AudioService } from '../services/audio.service';
+import { KeyboardService } from '../services/keyboard.service';
+import { SettingsPanelComponent } from '../components/ui/settings-panel.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule],
+  imports: [CommonModule, LucideAngularModule, FormsModule, SettingsPanelComponent],
   template: `
     <div class="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
       
@@ -52,9 +59,13 @@ import { FormsModule } from '@angular/forms';
          </div>
 
          <div class="p-6 lg:p-10 space-y-6">
+            <button (click)="openSettings()" class="p-3 w-full rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center lg:justify-start lg:space-x-3">
+               <lucide-icon [name]="'info'" [size]="20"></lucide-icon>
+               <span class="text-sm font-bold hidden lg:block">Help & Settings</span>
+            </button>
             <button (click)="toggleTheme()" class="p-3 w-full rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center lg:justify-start lg:space-x-3">
-               <lucide-icon [name]="isDarkMode ? 'sun' : 'moon'" [size]="20"></lucide-icon>
-               <span class="text-sm font-bold hidden lg:block">{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+               <lucide-icon [name]="settingsService.isDarkMode() ? 'sun' : 'moon'" [size]="20"></lucide-icon>
+               <span class="text-sm font-bold hidden lg:block">{{ settingsService.isDarkMode() ? 'Light Mode' : 'Dark Mode' }}</span>
             </button>
             <div class="flex items-center space-x-3 pt-6 border-t border-slate-100 dark:border-slate-800 justify-center lg:justify-start">
                <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
@@ -80,7 +91,7 @@ import { FormsModule } from '@angular/forms';
             </div>
 
             <div class="flex items-center space-x-4 ml-6">
-               <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 lg:px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 whitespace-nowrap">
+               <button (click)="recordClick()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 lg:px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 whitespace-nowrap">
                   <lucide-icon [name]="'plus'" [size]="14"></lucide-icon>
                   <span class="hidden lg:inline">Add Assets</span>
                </button>
@@ -96,7 +107,7 @@ import { FormsModule } from '@angular/forms';
                   <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Drag & Drop Uploader</h3>
                </div>
                
-               <div class="drop-zone group">
+               <div class="drop-zone group" (click)="recordClick()">
                   <div class="space-y-6">
                      <div class="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-500 shadow-inner">
                         <lucide-icon [name]="'cloud-upload'" [size]="40"></lucide-icon>
@@ -121,12 +132,12 @@ import { FormsModule } from '@angular/forms';
 
                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
                   @for (img of images; track img.id) {
-                     <div class="glass-card overflow-hidden group">
+                     <div class="glass-card overflow-hidden group" (click)="recordImageView()">
                         <div class="aspect-[4/3] relative overflow-hidden bg-slate-100 dark:bg-slate-800">
                            <img [src]="img.url" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="">
                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4 backdrop-blur-sm">
-                              <button class="p-3 bg-white/20 rounded-xl text-white hover:bg-white/40"><lucide-icon [name]="'share-2'" [size]="18"></lucide-icon></button>
-                              <button class="p-3 bg-red-500/80 rounded-xl text-white hover:bg-red-600"><lucide-icon [name]="'trash-2'" [size]="18"></lucide-icon></button>
+                              <button (click)="recordClick()" class="p-3 bg-white/20 rounded-xl text-white hover:bg-white/40"><lucide-icon [name]="'share-2'" [size]="18"></lucide-icon></button>
+                              <button (click)="recordClick()" class="p-3 bg-red-500/80 rounded-xl text-white hover:bg-red-600"><lucide-icon [name]="'trash-2'" [size]="18"></lucide-icon></button>
                            </div>
                            <div class="absolute top-4 left-4">
                               <span class="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-black uppercase tracking-widest text-white rounded-lg">
@@ -163,14 +174,22 @@ import { FormsModule } from '@angular/forms';
 
       </main>
 
+      <app-settings-panel />
     </div>
   `,
   styles: [`
     :host { display: block; }
+    kbd {
+      @apply px-2 py-1 text-xs font-mono bg-slate-200 dark:bg-slate-700 rounded;
+    }
   `]
 })
-export class App {
-  isDarkMode = true;
+export class App implements OnInit {
+  public settingsService = inject(SettingsService);
+  private statsService = inject(StatsService);
+  private audioService = inject(AudioService);
+  private keyboardService = inject(KeyboardService);
+
   images = [
     { id: '1', name: 'abstract_composition_01.webp', size: 1240, uploadedAt: '12 mins ago', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80' },
     { id: '2', name: 'architectural_study.jpg', size: 850, uploadedAt: '4 hours ago', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80' },
@@ -178,12 +197,26 @@ export class App {
     { id: '4', name: 'system_design_diagram.svg', size: 45, uploadedAt: '2 days ago', url: 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&q=80' }
   ];
 
-  constructor() {
-    if (this.isDarkMode) document.documentElement.classList.add('dark');
+  ngOnInit(): void {
+    this.statsService.recordVisit();
   }
 
-  toggleTheme() {
-    this.isDarkMode = !this.isDarkMode;
-    document.documentElement.classList.toggle('dark');
+  toggleTheme(): void {
+    this.audioService.playClick();
+    this.settingsService.toggleTheme();
+    this.statsService.recordThemeSwitch();
+  }
+
+  openSettings(): void {
+    this.audioService.playClick();
+    this.statsService.recordSettingsOpen();
+  }
+
+  recordClick(): void {
+    this.statsService.recordClick();
+  }
+
+  recordImageView(): void {
+    this.statsService.recordImageView();
   }
 }

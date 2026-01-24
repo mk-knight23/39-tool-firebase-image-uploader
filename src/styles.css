@@ -4,6 +4,17 @@
 
 :root {
   --primary: #6366f1;
+  --app-bg-light: #f8fafc;
+  --app-bg-dark: #020617;
+  color-scheme: light dark;
+}
+
+.light {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 body {
@@ -15,6 +26,10 @@ body {
   @apply bg-slate-950 text-slate-50;
 }
 
+.light body {
+  @apply bg-slate-50 text-slate-900;
+}
+
 @layer components {
   .drop-zone {
     @apply border-4 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] p-20 text-center transition-all cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10;
@@ -22,6 +37,10 @@ body {
   .glass-card {
     @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-sm;
   }
+}
+
+kbd {
+  @apply px-2 py-1 text-xs font-mono bg-slate-200 dark:bg-slate-700 rounded;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -34,4 +53,16 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+}
+
+@supports (backdrop-filter: blur(20px)) {
+  .glass-card {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl;
+  }
+}
+
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }
