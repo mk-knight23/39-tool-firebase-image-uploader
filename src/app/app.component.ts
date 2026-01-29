@@ -1,201 +1,390 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { 
-  CloudUpload, 
-  Image as ImageIcon, 
-  LayoutGrid, 
-  Trash2, 
-  Share2, 
-  CheckCircle2, 
-  AlertCircle,
-  MoreHorizontal,
+import {
+  CloudUpload,
+  Image as ImageIcon,
+  LayoutGrid,
+  Trash2,
+  Share2,
+  Heart,
+  Download,
   Search,
   Plus,
-  Github,
-  Sun,
   Moon,
-  LogOut,
-  Files,
+  Sun,
   Settings,
-  Info
+  X,
+  Filter,
+  Grid3x3,
+  List,
+  Eye
 } from 'lucide-angular';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../services/settings.service';
 import { StatsService } from '../services/stats.service';
 import { AudioService } from '../services/audio.service';
-import { KeyboardService } from '../services/keyboard.service';
 import { SettingsPanelComponent } from '../components/ui/settings-panel.component';
+
+interface GalleryImage {
+  id: string;
+  name: string;
+  size: number;
+  uploadedAt: string;
+  url: string;
+  category: string;
+  dimensions: string;
+  liked?: boolean;
+  aspectRatio?: string;
+}
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, FormsModule, SettingsPanelComponent],
   template: `
-    <div class="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
-      
-      <!-- Left Sidebar -->
-      <aside class="w-20 lg:w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between h-screen sticky top-0 transition-all duration-300">
-         <div class="p-6 lg:p-10 space-y-12 flex flex-col items-center lg:items-start">
-            <div class="flex items-center space-x-3">
-               <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-600/30">F</div>
-               <span class="text-xl font-display font-black tracking-tight dark:text-white hidden lg:block uppercase">Firebase<span class="text-indigo-600">Hub</span></span>
+    <div class="min-h-screen bg-gallery-bg dark:bg-[#0a0a0a] transition-colors duration-300">
+
+      <!-- Header -->
+      <header class="sticky top-0 z-40 bg-gallery-surface/80 dark:bg-[#171717]/80 backdrop-blur-xl border-b border-neutral-200 dark:border-neutral-800">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+          <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                <lucide-icon [name]="'image'" [size]="24"></lucide-icon>
+              </div>
+              <div>
+                <h1 class="text-xl font-black tracking-tight text-gallery-text-primary dark:text-white">Visual<span class="text-indigo-500">Vault</span></h1>
+                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gallery-text-muted">Creative Asset Manager</p>
+              </div>
             </div>
 
-            <nav class="space-y-4 w-full">
-               <div class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 cursor-pointer">
-                  <lucide-icon [name]="'layout-grid'" [size]="20"></lucide-icon>
-                  <span class="text-sm font-bold hidden lg:block">Gallery</span>
-               </div>
-               <div class="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
-                  <lucide-icon [name]="'cloud-upload'" [size]="20"></lucide-icon>
-                  <span class="text-sm font-bold hidden lg:block">Uploads</span>
-               </div>
-               <div class="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
-                  <lucide-icon [name]="'files'" [size]="20"></lucide-icon>
-                  <span class="text-sm font-bold hidden lg:block">Collections</span>
-               </div>
-            </nav>
-         </div>
-
-         <div class="p-6 lg:p-10 space-y-6">
-            <button (click)="openSettings()" class="p-3 w-full rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center lg:justify-start lg:space-x-3">
-               <lucide-icon [name]="'info'" [size]="20"></lucide-icon>
-               <span class="text-sm font-bold hidden lg:block">Help & Settings</span>
-            </button>
-            <button (click)="toggleTheme()" class="p-3 w-full rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center lg:justify-start lg:space-x-3">
-               <lucide-icon [name]="settingsService.isDarkMode() ? 'sun' : 'moon'" [size]="20"></lucide-icon>
-               <span class="text-sm font-bold hidden lg:block">{{ settingsService.isDarkMode() ? 'Light Mode' : 'Dark Mode' }}</span>
-            </button>
-            <div class="flex items-center space-x-3 pt-6 border-t border-slate-100 dark:border-slate-800 justify-center lg:justify-start">
-               <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-               <div class="flex flex-col hidden lg:flex min-w-0">
-                  <span class="text-xs font-black truncate dark:text-white uppercase">M. Kazi</span>
-                  <span class="text-[10px] font-bold text-slate-400">Pro Account</span>
-               </div>
-            </div>
-         </div>
-      </aside>
-
-      <!-- Main Workspace -->
-      <main class="flex-1 flex flex-col min-w-0">
-         
-         <!-- Top Bar -->
-         <header class="h-24 border-b border-slate-200 dark:border-slate-800 px-8 lg:px-12 flex items-center justify-between sticky top-0 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md z-40 transition-all duration-300">
-            <div class="flex items-center space-x-6 flex-1 min-w-0">
-               <h2 class="text-2xl font-display font-black tracking-tight dark:text-white hidden sm:block">Assets Gallery</h2>
-               <div class="relative w-full max-w-md group">
-                  <lucide-icon [name]="'search'" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" [size]="16"></lucide-icon>
-                  <input type="text" placeholder="Filter images..." class="w-full bg-white dark:bg-slate-900 border-none rounded-2xl pl-12 pr-6 py-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-indigo-600 transition-all">
-               </div>
+            <!-- Search Bar -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-8">
+              <div class="relative w-full">
+                <lucide-icon [name]="'search'" class="absolute left-4 top-1/2 -translate-y-1/2 text-gallery-text-muted" [size]="18"></lucide-icon>
+                <input
+                  type="text"
+                  placeholder="Search your visual library..."
+                  class="search-input"
+                >
+              </div>
             </div>
 
-            <div class="flex items-center space-x-4 ml-6">
-               <button (click)="recordClick()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 lg:px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 whitespace-nowrap">
-                  <lucide-icon [name]="'plus'" [size]="14"></lucide-icon>
-                  <span class="hidden lg:inline">Add Assets</span>
-               </button>
+            <!-- Actions -->
+            <div class="flex items-center gap-3">
+              <button
+                (click)="toggleTheme()"
+                class="p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-gallery-text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
+              >
+                <lucide-icon [name]="settingsService.isDarkMode() ? 'sun' : 'moon'" [size]="20"></lucide-icon>
+              </button>
+              <button
+                (click)="openSettings()"
+                class="p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-gallery-text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
+              >
+                <lucide-icon [name]="'settings'" [size]="20"></lucide-icon>
+              </button>
+              <button
+                (click)="triggerUpload()"
+                class="btn-gallery-primary flex items-center gap-2"
+              >
+                <lucide-icon [name]="'plus'" [size]="18"></lucide-icon>
+                <span class="hidden sm:inline">Upload</span>
+              </button>
             </div>
-         </header>
+          </div>
+        </div>
+      </header>
 
-         <!-- Content -->
-         <div class="flex-1 p-8 lg:p-12 space-y-16 overflow-y-auto custom-scrollbar">
-            
-            <!-- Upload Section -->
-            <section class="space-y-8">
-               <div class="flex items-center justify-between">
-                  <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Drag & Drop Uploader</h3>
-               </div>
-               
-               <div class="drop-zone group" (click)="recordClick()">
-                  <div class="space-y-6">
-                     <div class="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-500 shadow-inner">
-                        <lucide-icon [name]="'cloud-upload'" [size]="40"></lucide-icon>
-                     </div>
-                     <div class="space-y-2">
-                        <h4 class="text-2xl font-display font-black dark:text-white">Push to Cloud</h4>
-                        <p class="text-slate-500 font-medium max-w-xs mx-auto italic">Supports PNG, JPG and WebP up to 10MB.</p>
-                     </div>
-                     <button class="text-indigo-600 font-black uppercase tracking-widest text-[10px] hover:underline">Or browse files manually</button>
+      <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Upload Section -->
+        <section class="mb-12 animate-fade-in">
+          <div class="upload-zone p-16 text-center cursor-pointer" (click)="triggerUpload()">
+            <div class="space-y-6">
+              <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-indigo-500 rounded-3xl flex items-center justify-center mx-auto">
+                <lucide-icon [name]="'cloud-upload'" [size]="40"></lucide-icon>
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-gallery-text-primary dark:text-white mb-2">Drop your masterpieces here</h3>
+                <p class="text-gallery-text-secondary">Supports PNG, JPG, WebP up to 10MB</p>
+              </div>
+              <button class="text-indigo-500 font-bold text-sm uppercase tracking-wider hover:underline">
+                Or browse files
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Gallery Stats -->
+        <section class="mb-8">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">{{ images.length }}</div>
+              <div class="stat-label">Total Assets</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ likedCount }}</div>
+              <div class="stat-label">Favorites</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">4.2</div>
+              <div class="stat-label">GB Used</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">99%</div>
+              <div class="stat-label">Uptime</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Filter Bar -->
+        <section class="mb-8">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="section-header mb-0">
+              <span class="section-title">Your Collection</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex gap-2">
+                <button
+                  *ngFor="let category of categories"
+                  (click)="selectedCategory = category"
+                  [class.active]="selectedCategory === category"
+                  class="collection-tag"
+                >
+                  {{ category }}
+                </button>
+              </div>
+              <div class="flex gap-2 ml-4">
+                <button class="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-gallery-text-primary">
+                  <lucide-icon [name]="'grid-3x-3'" [size]="18"></lucide-icon>
+                </button>
+                <button class="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-gallery-text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700">
+                  <lucide-icon [name]="'list'" [size]="18"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Gallery Grid -->
+        <section class="masonry-grid">
+          <div *ngFor="let img of filteredImages; trackBy: trackById" class="masonry-item animate-scale-in">
+            <div class="gallery-card group" [style.aspect-ratio]="img.aspectRatio || '4/3'">
+              <!-- Image -->
+              <div class="relative overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                <img
+                  [src]="img.url"
+                  [alt]="img.name"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  (click)="openLightbox(img)"
+                >
+
+                <!-- Overlay -->
+                <div class="image-overlay"></div>
+
+                <!-- Stats Badge -->
+                <div class="image-stats">
+                  <span class="badge badge-primary">{{ img.size }} KB</span>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="action-bar">
+                  <button
+                    (click)="toggleLike(img); $event.stopPropagation()"
+                    class="action-btn"
+                    [class.text-pink-500]="img.liked"
+                  >
+                    <lucide-icon [name]="'heart'" [size]="18" [class.fill-current]="img.liked"></lucide-icon>
+                  </button>
+                  <button (click)="shareImage(img); $event.stopPropagation()" class="action-btn">
+                    <lucide-icon [name]="'share-2'" [size]="18"></lucide-icon>
+                  </button>
+                  <button (click)="downloadImage(img); $event.stopPropagation()" class="action-btn">
+                    <lucide-icon [name]="'download'" [size]="18"></lucide-icon>
+                  </button>
+                  <button (click)="openLightbox(img)" class="action-btn">
+                    <lucide-icon [name]="'eye'" [size]="18"></lucide-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card Info -->
+              <div class="p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-bold truncate text-gallery-text-primary dark:text-white">{{ img.name }}</p>
+                    <p class="text-xs text-gallery-text-muted mt-1">{{ img.dimensions }} • {{ img.uploadedAt }}</p>
                   </div>
-               </div>
-            </section>
-
-            <!-- Gallery Grid -->
-            <section class="space-y-8">
-               <div class="flex items-center justify-between">
-                  <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Library Assets</h3>
-                  <div class="flex items-center space-x-4">
-                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sort: Recent</span>
-                  </div>
-               </div>
-
-               <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
-                  @for (img of images; track img.id) {
-                     <div class="glass-card overflow-hidden group" (click)="recordImageView()">
-                        <div class="aspect-[4/3] relative overflow-hidden bg-slate-100 dark:bg-slate-800">
-                           <img [src]="img.url" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="">
-                           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4 backdrop-blur-sm">
-                              <button (click)="recordClick()" class="p-3 bg-white/20 rounded-xl text-white hover:bg-white/40"><lucide-icon [name]="'share-2'" [size]="18"></lucide-icon></button>
-                              <button (click)="recordClick()" class="p-3 bg-red-500/80 rounded-xl text-white hover:bg-red-600"><lucide-icon [name]="'trash-2'" [size]="18"></lucide-icon></button>
-                           </div>
-                           <div class="absolute top-4 left-4">
-                              <span class="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-black uppercase tracking-widest text-white rounded-lg">
-                                 {{ img.size }} KB
-                              </span>
-                           </div>
-                        </div>
-                        <div class="p-6 flex items-center justify-between">
-                           <div class="min-w-0 space-y-0.5">
-                              <p class="text-sm font-bold truncate dark:text-white uppercase tracking-tight">{{ img.name }}</p>
-                              <p class="text-[10px] text-slate-400 font-medium italic">{{ img.uploadedAt }}</p>
-                           </div>
-                           <lucide-icon [name]="'more-horizontal'" class="text-slate-300" [size]="16"></lucide-icon>
-                        </div>
-                     </div>
-                  }
-               </div>
-            </section>
-
-         </div>
-
-         <!-- Status Footer -->
-         <footer class="h-16 border-t border-slate-200 dark:border-slate-800 px-8 lg:px-12 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            <div class="flex items-center space-x-4">
-               <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Firebase Online</span>
-               <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-               <span>v2.0 Stable Build</span>
+                  <button (click)="toggleLike(img)" class="flex-shrink-0">
+                    <lucide-icon
+                      [name]="'heart'"
+                      [size]="18"
+                      [class.text-pink-500]="img.liked"
+                      [class.text-gallery-text-muted]="!img.liked"
+                      [class.fill-current]="img.liked"
+                    ></lucide-icon>
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="flex items-center space-x-8">
-               <a href="https://github.com/mk-knight23/49-Firebase-Image-Uploader" class="hover:text-indigo-600 transition-colors">Technical Specs</a>
-               <a href="#" class="hover:text-indigo-600 transition-colors">Architecture Documentation</a>
-            </div>
-         </footer>
-
+          </div>
+        </section>
       </main>
+
+      <!-- Lightbox Modal -->
+      <div *ngIf="selectedImage" class="lightbox-backdrop flex items-center justify-center p-4" (click)="closeLightbox()">
+        <div class="lightbox-content flex flex-col lg:flex-row max-h-[90vh]" (click)="$event.stopPropagation()">
+          <!-- Close Button -->
+          <button
+            (click)="closeLightbox()"
+            class="absolute top-4 right-4 z-10 p-3 bg-black/50 hover:bg-black/70 text-white rounded-xl transition-all"
+          >
+            <lucide-icon [name]="'x'" [size]="24"></lucide-icon>
+          </button>
+
+          <!-- Image Preview -->
+          <div class="flex-1 overflow-hidden bg-black flex items-center justify-center">
+            <img [src]="selectedImage.url" [alt]="selectedImage.name" class="max-w-full max-h-[60vh] lg:max-h-[90vh] object-contain">
+          </div>
+
+          <!-- Image Details -->
+          <div class="w-full lg:w-96 p-8 bg-white dark:bg-[#171717] flex flex-col">
+            <span class="badge badge-primary self-start mb-4">{{ selectedImage.category }}</span>
+            <h2 class="text-2xl font-black text-gallery-text-primary dark:text-white mb-4">{{ selectedImage.name }}</h2>
+
+            <div class="space-y-4 text-sm text-gallery-text-secondary mb-8">
+              <div class="flex justify-between">
+                <span>Dimensions</span>
+                <span class="font-bold text-gallery-text-primary dark:text-white">{{ selectedImage.dimensions }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>File Size</span>
+                <span class="font-bold text-gallery-text-primary dark:text-white">{{ selectedImage.size }} KB</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Uploaded</span>
+                <span class="font-bold text-gallery-text-primary dark:text-white">{{ selectedImage.uploadedAt }}</span>
+              </div>
+            </div>
+
+            <div class="mt-auto space-y-3">
+              <button class="w-full btn-gallery-primary flex items-center justify-center gap-2">
+                <lucide-icon [name]="'download'" [size]="18"></lucide-icon>
+                Download Original
+              </button>
+              <div class="grid grid-cols-2 gap-3">
+                <button class="btn-gallery-secondary flex items-center justify-center gap-2">
+                  <lucide-icon [name]="'heart'" [size]="18"></lucide-icon>
+                  {{ selectedImage.liked ? 'Liked' : 'Like' }}
+                </button>
+                <button class="btn-gallery-secondary flex items-center justify-center gap-2">
+                  <lucide-icon [name]="'share-2'" [size]="18"></lucide-icon>
+                  Share
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <app-settings-panel />
     </div>
   `,
   styles: [`
     :host { display: block; }
-    kbd {
-      @apply px-2 py-1 text-xs font-mono bg-slate-200 dark:bg-slate-700 rounded;
-    }
   `]
 })
-export class App implements OnInit {
+export class AppComponent implements OnInit {
   public settingsService = inject(SettingsService);
   private statsService = inject(StatsService);
   private audioService = inject(AudioService);
-  private keyboardService = inject(KeyboardService);
 
-  images = [
-    { id: '1', name: 'abstract_composition_01.webp', size: 1240, uploadedAt: '12 mins ago', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80' },
-    { id: '2', name: 'architectural_study.jpg', size: 850, uploadedAt: '4 hours ago', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80' },
-    { id: '3', name: 'brand_identity_mockup.png', size: 2100, uploadedAt: '1 day ago', url: 'https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?w=800&q=80' },
-    { id: '4', name: 'system_design_diagram.svg', size: 45, uploadedAt: '2 days ago', url: 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&q=80' }
+  selectedCategory = 'All';
+  selectedImage: GalleryImage | null = null;
+
+  get likedCount(): number {
+    return this.images.filter(i => i.liked).length;
+  }
+
+  categories = ['All', 'Photography', 'Design', '3D Art', 'Vectors'];
+
+  images: GalleryImage[] = [
+    {
+      id: '1',
+      name: 'Abstract Composition 01',
+      size: 1240,
+      uploadedAt: '2 hours ago',
+      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
+      category: 'Design',
+      dimensions: '1920 × 1280',
+      liked: true,
+      aspectRatio: '4/3'
+    },
+    {
+      id: '2',
+      name: 'Urban Architecture',
+      size: 2100,
+      uploadedAt: '1 day ago',
+      url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
+      category: 'Photography',
+      dimensions: '2400 × 1600',
+      liked: false,
+      aspectRatio: '3/2'
+    },
+    {
+      id: '3',
+      name: 'Neon Dreamscape',
+      size: 890,
+      uploadedAt: '3 days ago',
+      url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80',
+      category: '3D Art',
+      dimensions: '1920 × 1080',
+      liked: true,
+      aspectRatio: '16/9'
+    },
+    {
+      id: '4',
+      name: 'Minimal Patterns',
+      size: 450,
+      uploadedAt: '5 days ago',
+      url: 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&q=80',
+      category: 'Vectors',
+      dimensions: '1200 × 1200',
+      liked: false,
+      aspectRatio: '1/1'
+    },
+    {
+      id: '5',
+      name: 'Cyber Portrait',
+      size: 1560,
+      uploadedAt: '1 week ago',
+      url: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80',
+      category: '3D Art',
+      dimensions: '1080 × 1350',
+      liked: false,
+      aspectRatio: '4/5'
+    },
+    {
+      id: '6',
+      name: 'Brand Identity',
+      size: 780,
+      uploadedAt: '2 weeks ago',
+      url: 'https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?w=800&q=80',
+      category: 'Design',
+      dimensions: '1600 × 1200',
+      liked: true,
+      aspectRatio: '4/3'
+    }
   ];
+
+  get filteredImages(): GalleryImage[] {
+    if (this.selectedCategory === 'All') {
+      return this.images;
+    }
+    return this.images.filter(img => img.category === this.selectedCategory);
+  }
 
   ngOnInit(): void {
     this.statsService.recordVisit();
@@ -209,14 +398,37 @@ export class App implements OnInit {
 
   openSettings(): void {
     this.audioService.playClick();
+    this.settingsService.toggleHelp();
     this.statsService.recordSettingsOpen();
   }
 
-  recordClick(): void {
+  triggerUpload(): void {
     this.statsService.recordClick();
   }
 
-  recordImageView(): void {
+  toggleLike(image: GalleryImage): void {
+    this.statsService.recordClick();
+    image.liked = !image.liked;
+  }
+
+  shareImage(image: GalleryImage): void {
+    this.statsService.recordClick();
+  }
+
+  downloadImage(image: GalleryImage): void {
+    this.statsService.recordClick();
+  }
+
+  openLightbox(image: GalleryImage): void {
     this.statsService.recordImageView();
+    this.selectedImage = image;
+  }
+
+  closeLightbox(): void {
+    this.selectedImage = null;
+  }
+
+  trackById(index: number, image: GalleryImage): string {
+    return image.id;
   }
 }
