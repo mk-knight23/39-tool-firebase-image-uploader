@@ -99,9 +99,19 @@ interface GalleryImage {
       </header>
 
       <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Hidden File Input -->
+        <input
+          type="file"
+          id="fileInput"
+          class="hidden"
+          accept="image/*"
+          (change)="handleFileSelect($event)"
+        />
+
         <!-- Upload Section -->
         <section class="mb-12 animate-fade-in">
-          <div class="upload-zone p-16 text-center cursor-pointer" (click)="triggerUpload()">
+          <!-- Upload Zone -->
+          <div *ngIf="!previewImage && !isUploading" class="upload-zone p-16 text-center cursor-pointer" (click)="triggerUpload()">
             <div class="space-y-6">
               <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-pink-100 dark:from-indigo-900/30 dark:to-pink-900/30 text-indigo-500 rounded-3xl flex items-center justify-center mx-auto">
                 <lucide-icon [name]="'cloud-upload'" [size]="40"></lucide-icon>
@@ -113,6 +123,32 @@ interface GalleryImage {
               <button class="text-indigo-500 font-bold text-sm uppercase tracking-wider hover:underline">
                 Or browse files
               </button>
+            </div>
+          </div>
+
+          <!-- Preview & Upload Progress -->
+          <div *ngIf="previewImage || isUploading" class="upload-zone p-8">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+              <!-- Preview -->
+              <div class="w-full md:w-1/3">
+                <img [src]="previewImage" alt="Preview" class="w-full h-48 object-cover rounded-xl">
+              </div>
+
+              <!-- Progress -->
+              <div class="flex-1 w-full">
+                <div *ngIf="isUploading">
+                  <div class="flex justify-between mb-2">
+                    <span class="font-bold text-gallery-text-primary dark:text-white">Uploading...</span>
+                    <span class="text-indigo-500 font-bold">{{ uploadProgress | number:'1.0-0' }}%</span>
+                  </div>
+                  <div class="h-3 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 transition-all duration-300" [style.width.%]="uploadProgress"></div>
+                  </div>
+                  <button (click)="cancelUpload()" class="mt-4 text-red-500 text-sm font-bold hover:underline">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -402,8 +438,76 @@ export class AppComponent implements OnInit {
     this.statsService.recordSettingsOpen();
   }
 
+  previewImage: string | null = null;
+  isUploading = false;
+  uploadProgress = 0;
+
   triggerUpload(): void {
     this.statsService.recordClick();
+    document.getElementById('fileInput')?.click();
+  }
+
+  handleFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WebP)');
+      return;
+    }
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    // Read and preview image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewImage = e.target?.result as string;
+      this.simulateUpload(file);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  simulateUpload(file: File): void {
+    this.isUploading = true;
+    this.uploadProgress = 0;
+
+    const interval = setInterval(() => {
+      this.uploadProgress += Math.random() * 20;
+      if (this.uploadProgress >= 100) {
+        this.uploadProgress = 100;
+        clearInterval(interval);
+
+        // Add to gallery
+        const newImage: GalleryImage = {
+          id: Date.now().toString(),
+          name: file.name,
+          size: Math.round(file.size / 1024),
+          uploadedAt: 'Just now',
+          url: this.previewImage!,
+          category: 'Photography',
+          dimensions: 'Unknown',
+          liked: false,
+          aspectRatio: '4/3'
+        };
+
+        this.images.unshift(newImage);
+        this.isUploading = false;
+        this.previewImage = null;
+      }
+    }, 200);
+  }
+
+  cancelUpload(): void {
+    this.previewImage = null;
+    this.isUploading = false;
+    this.uploadProgress = 0;
   }
 
   toggleLike(image: GalleryImage): void {
