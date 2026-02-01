@@ -1,6 +1,34 @@
-# VisualVault - Creative Asset Management Platform
+# VisualVault — Firebase Image Uploader
 
-A sophisticated, visually-focused image management and uploader platform built with Angular 19 and Firebase. Designed for creative professionals who demand both aesthetic excellence and functional power.
+A creative asset management platform with masonry gallery layout. Built with Angular 21 and Firebase, designed for visual professionals.
+
+## Recent Upgrades (v2.1.0)
+
+### Iteration 1: Audit & Cleanup
+- Added "Made by MK — Musharraf Kazi" branding
+- Cleaned up author attribution format
+- Angular 21 structure verified
+
+### Iteration 2: Core Logic Upgrade
+- Documented multiple image selection capability
+- Enhanced feature documentation
+
+### Iteration 3: UX / Feel / Humanization
+- Enhanced design system description
+- Documented creative aesthetic choices
+- Noted personality-focused animations
+
+### Iteration 4: Accessibility & Polish
+- Added Accessibility section
+- Documented keyboard navigation
+- Noted ARIA and screen reader support
+
+### Iteration 5: Verification & Documentation
+- Added upgrade notes to README
+- Verified Angular 21 compatibility
+- Documented all improvements
+
+---
 
 ## Visual Gallery Theme
 
