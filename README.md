@@ -15,7 +15,7 @@ This application features a premium **"Visual Gallery/Creator"** design system:
 
 | Feature | Description |
 |---------|-------------|
-| **Drag & Drop Upload** | Elegant dropzone with gradient hover effects |
+| **Drag & Drop Upload** | Elegant dropzone with gradient hover effects • **NEW: Multiple image selection** |
 | **Masonry Gallery** | Responsive column-based layout that adapts to screen size |
 | **Image Lightbox** | Full-screen preview with detailed metadata |
 | **Category Filtering** | Filter by Photography, Design, 3D Art, Vectors |
