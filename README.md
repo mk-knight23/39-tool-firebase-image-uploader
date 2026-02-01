@@ -34,6 +34,13 @@ This application features a premium **"Visual Gallery/Creator"** design system:
 
 ## Design System
 
+This application follows a **Visual Gallery/Creator** aesthetic with personality:
+- Smooth hover animations on image cards with lift effect
+- Gradient accents (indigo to pink) for creative flair
+- Heart animation when favoriting images
+- Masonry layout that feels organic and curated
+- Generous white space for visual content to breathe
+
 See `design-system/MASTER.md` for complete design token documentation.
 
 ### Color Palette
