@@ -135,5 +135,5 @@ This project is configured for deployment on three platforms:
 ---
 
 **Theme:** Visual Gallery/Creator
+**Made by:** MK — Musharraf Kazi
 **License:** MIT
-**Author:** mk-knight23
