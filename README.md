@@ -69,6 +69,14 @@ npm start
 npm run build
 ```
 
+## Accessibility
+
+- Keyboard navigation support throughout the gallery
+- ARIA labels on all interactive elements
+- Focus indicators on all focusable elements
+- High contrast ratios for visual clarity
+- Screen reader friendly image descriptions
+
 ## Configuration
 
 1. Create `src/environments/environment.ts`:
