@@ -326,6 +326,18 @@ interface GalleryImage {
       </div>
 
       <app-settings-panel />
+
+      <!-- Footer -->
+      <footer class="border-t border-neutral-200 dark:border-neutral-800 py-6 px-6 mt-12">
+        <div class="max-w-7xl mx-auto text-center">
+          <p class="text-indigo-500 text-xs font-bold uppercase tracking-[0.3em] mb-2">
+            Made by MK — Musharraf Kazi
+          </p>
+          <p class="text-neutral-500 text-xs">
+            © 2026 Firebase Gallery. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   `,
   styles: [`
