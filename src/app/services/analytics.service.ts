@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { analytics } from '../core/config/firebase.config';
+import { analytics, logEvent } from '../core/config/firebase.config';
 
 interface AnalyticsEvent {
   event: string;
@@ -29,7 +29,7 @@ export class AnalyticsService {
     }
 
     try {
-      analytics.logEvent(event, params);
+      logEvent(analytics, event, params);
     } catch (error) {
       console.error('Failed to log analytics event:', error);
     }

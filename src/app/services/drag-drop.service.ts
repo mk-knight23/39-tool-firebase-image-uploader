@@ -1,7 +1,7 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs';
 
-export interface DragEvent {
+export interface DragEventData {
   type: 'dragenter' | 'dragover' | 'dragleave' | 'drop';
   files?: FileList;
   event: DragEvent;
@@ -98,7 +98,7 @@ export class DragDropService {
   /**
    * Validate dropped files
    */
-  private validateFiles(files: FileList): FileValidationResult {
+  validateFiles(files: FileList): FileValidationResult {
     const validFiles: File[] = [];
     const errors: string[] = [];
 
@@ -137,8 +137,8 @@ export class DragDropService {
   /**
    * Add visual feedback for drag over state
    */
-  private addDragOverStyle(event: DragEvent): void {
-    const target = event.target as HTMLElement;
+  private addDragOverStyle(event: Event): void {
+    const target = event.currentTarget as HTMLElement;
     if (target.classList.contains('drop-zone')) {
       target.classList.add('drag-over');
     }
@@ -147,8 +147,8 @@ export class DragDropService {
   /**
    * Remove visual feedback for drag over state
    */
-  private removeDragOverStyle(event: DragEvent): void {
-    const target = event.target as HTMLElement;
+  private removeDragOverStyle(event: Event): void {
+    const target = event.currentTarget as HTMLElement;
     if (target.classList.contains('drop-zone')) {
       target.classList.remove('drag-over');
     }

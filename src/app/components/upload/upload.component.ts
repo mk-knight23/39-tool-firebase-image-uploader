@@ -86,7 +86,7 @@ import { AnalyticsService } from '../../services/analytics.service';
               class="remove-file-button"
               (click)="removeFile(i)"
             >
-              <lucide-icon [name]="'x'" [size="16"></lucide-icon>
+              <lucide-icon [name]="'x'" [size]="16"></lucide-icon>
             </button>
           </div>
         </div>
@@ -99,7 +99,7 @@ import { AnalyticsService } from '../../services/analytics.service';
             [disabled]="isUploading || selectedFiles.length === 0"
             (click)="startUpload()"
           >
-            <lucide-icon [name]="'upload'" [size="18" class="mr-2"></lucide-icon>
+            <lucide-icon [name]="'upload'" [size]="18" class="mr-2"></lucide-icon>
             Upload {{ selectedFiles.length }} File{{ selectedFiles.length !== 1 ? 's' : '' }}
           </button>
           <button

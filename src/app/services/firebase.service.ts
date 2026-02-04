@@ -1,16 +1,33 @@
 import { Injectable } from '@angular/core';
+import { Observable, from, throwError, forkJoin } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { ImageAsset } from '../types/image';
+import { initializeApp } from 'firebase/app';
 import {
-  storage,
+  getStorage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
   deleteObject,
-  list,
-  listAll
+  listAll,
+  StorageReference,
+  UploadTask,
+  UploadTaskSnapshot
 } from 'firebase/storage';
-import { Observable, from, throwError, of } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
-import { ImageAsset } from '../types/image';
+
+// Firebase configuration - should be moved to environment variables
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 
 @Injectable({
   providedIn: 'root'
@@ -23,35 +40,31 @@ export class FirebaseService {
    */
   uploadFile(file: File, path: string = 'images'): Observable<{ progress: number; downloadUrl: string }> {
     const filePath = `${path}/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, filePath);
+    const storageRef: StorageReference = ref(storage, filePath);
+    const task: UploadTask = uploadBytesResumable(storageRef, file);
 
-    return from(uploadBytesResumable(storageRef, file)).pipe(
-      switchMap((task) => {
-        return new Observable<{ progress: number; downloadUrl: string }>(observer => {
-          // Subscribe to state changes, errors, and completion of the upload
-          task.on('state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              observer.next({ progress, downloadUrl: '' });
-            },
-            (error) => {
-              observer.error(error);
-            },
-            () => {
-              // Upload completed successfully, now get the download URL
-              getDownloadURL(task.snapshot.ref).then((downloadUrl) => {
-                observer.next({ progress: 100, downloadUrl });
-                observer.complete();
-              });
-            }
-          );
-        });
-      }),
-      catchError(error => {
-        console.error('Upload failed:', error);
-        return throwError(() => new Error('Upload failed: ' + error.message));
-      })
-    );
+    return new Observable<{ progress: number; downloadUrl: string }>(observer => {
+      // Subscribe to state changes, errors, and completion of the upload
+      task.on('state_changed',
+        (snapshot: UploadTaskSnapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          observer.next({ progress, downloadUrl: '' });
+        },
+        (error: Error) => {
+          observer.error(error);
+        },
+        async () => {
+          // Upload completed successfully, now get the download URL
+          try {
+            const downloadUrl = await getDownloadURL(task.snapshot.ref);
+            observer.next({ progress: 100, downloadUrl });
+            observer.complete();
+          } catch (error) {
+            observer.error(error);
+          }
+        }
+      );
+    });
   }
 
   /**
@@ -76,22 +89,22 @@ export class FirebaseService {
     });
 
     // Combine all upload observables
-    return from(Promise.all(uploadObservables));
+    return forkJoin(uploadObservables);
   }
 
   /**
    * Get image URL
    */
-  getImageUrl(path: string): Promise<string> {
-    const imageRef = ref(storage, path);
+  async getImageUrl(path: string): Promise<string> {
+    const imageRef: StorageReference = ref(storage, path);
     return getDownloadURL(imageRef);
   }
 
   /**
    * Delete an image from Firebase Storage
    */
-  deleteImage(path: string): Promise<void> {
-    const imageRef = ref(storage, path);
+  async deleteImage(path: string): Promise<void> {
+    const imageRef: StorageReference = ref(storage, path);
     return deleteObject(imageRef);
   }
 
@@ -99,28 +112,26 @@ export class FirebaseService {
    * List all images in a directory
    */
   listImages(path: string = 'images'): Observable<ImageAsset[]> {
-    const listRef = ref(storage, path);
+    const listRef: StorageReference = ref(storage, path);
 
     return from(listAll(listRef)).pipe(
-      switchMap((result) => {
-        const downloadUrlPromises = result.items.map((item) =>
-          getDownloadURL(item).then((url) => ({
-            id: item.name,
-            url,
-            name: item.name,
-            size: 0, // Firebase doesn't provide size directly
-            type: 'image',
-            path: item.fullPath,
-            uploadedAt: new Date().toISOString(),
-            status: 'completed' as const
-          }))
-        );
-
-        return from(Promise.all(downloadUrlPromises));
+      map((result) => {
+        // Since we can't get metadata without additional calls,
+        // we'll return what we can
+        return result.items.map((item) => ({
+          id: item.name,
+          url: '', // Will be filled by caller
+          name: item.name,
+          size: 0,
+          type: 'image',
+          path: item.fullPath,
+          uploadedAt: new Date().toISOString(),
+          status: 'completed' as const
+        }));
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Failed to list images:', error);
-        return of([]);
+        return throwError(() => new Error('Failed to list images: ' + error.message));
       })
     );
   }

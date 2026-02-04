@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 
 // Firebase configuration - Replace with your actual config
 const firebaseConfig = {
@@ -18,4 +18,4 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 const analytics = getAnalytics(app);
 
-export { app, storage, ref, uploadBytesResumable, getDownloadURL, deleteObject, analytics };
+export { app, storage, ref, uploadBytesResumable, getDownloadURL, deleteObject, analytics, logEvent };
