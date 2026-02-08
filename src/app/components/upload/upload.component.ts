@@ -75,7 +75,9 @@ import { AnalyticsService } from '../../services/analytics.service';
         <div class="selected-files-list">
           <div *ngFor="let file of selectedFiles; let i = index" class="selected-file-item">
             <div class="selected-file-info">
-              <lucide-icon [name]="'file-image'" [size]="20" class="text-indigo-500"></lucide-icon>
+              <!-- Image Preview -->
+              <img *ngIf="filePreviews[file.name]" [src]="filePreviews[file.name]" class="file-preview-thumb" alt="{{ file.name }}" />
+              <lucide-icon *ngIf="!filePreviews[file.name]" [name]="'file-image'" [size]="20" class="text-indigo-500"></lucide-icon>
               <div class="selected-file-details">
                 <span class="selected-file-name">{{ file.name }}</span>
                 <span class="selected-file-size">{{ formatFileSize(file.size) }}</span>
@@ -286,6 +288,14 @@ import { AnalyticsService } from '../../services/analytics.service';
       gap: 12px;
     }
 
+    .file-preview-thumb {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
     .selected-file-name {
       font-weight: 500;
       color: #1f2937;
@@ -467,6 +477,7 @@ export class UploadComponent {
   isDragging = false;
   isUploading = false;
   selectedFiles: File[] = [];
+  filePreviews: { [key: string]: string } = {};
   fileProgresses: { name: string; progress: number }[] = [];
   overallProgress = 0;
   uploadCompleteCount = 0;
@@ -509,6 +520,7 @@ export class UploadComponent {
 
     if (this.validationResult.valid) {
       this.selectedFiles = [...this.validationResult.files];
+      this.generatePreviews();
     }
   }
 
@@ -526,15 +538,32 @@ export class UploadComponent {
 
       if (this.validationResult.valid) {
         this.selectedFiles = Array.from(files);
+        this.generatePreviews();
       }
     }
   }
 
+  generatePreviews(): void {
+    this.filePreviews = {};
+    this.selectedFiles.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        this.filePreviews[file.name] = URL.createObjectURL(file);
+      }
+    });
+  }
+
   removeFile(index: number): void {
+    const file = this.selectedFiles[index];
+    if (file && this.filePreviews[file.name]) {
+      URL.revokeObjectURL(this.filePreviews[file.name]);
+      delete this.filePreviews[file.name];
+    }
     this.selectedFiles.splice(index, 1);
   }
 
   clearSelection(): void {
+    Object.values(this.filePreviews).forEach(url => URL.revokeObjectURL(url));
+    this.filePreviews = {};
     this.selectedFiles = [];
     this.validationResult = {
       valid: true,

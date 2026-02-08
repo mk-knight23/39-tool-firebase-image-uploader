@@ -24,7 +24,9 @@ import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../services/settings.service';
 import { StatsService } from '../services/stats.service';
 import { AudioService } from '../services/audio.service';
+import { FirebaseService } from './services/firebase.service';
 import { SettingsPanelComponent } from '../components/ui/settings-panel.component';
+import { firstValueFrom } from 'rxjs';
 
 interface GalleryImage {
   id: string;
@@ -348,6 +350,7 @@ export class AppComponent implements OnInit {
   public settingsService = inject(SettingsService);
   private statsService = inject(StatsService);
   private audioService = inject(AudioService);
+  private firebaseService = inject(FirebaseService);
 
   selectedCategory = 'All';
   selectedImage: GalleryImage | null = null;
@@ -434,8 +437,25 @@ export class AppComponent implements OnInit {
     return this.images.filter(img => img.category === this.selectedCategory);
   }
 
+  async loadRealImages() {
+    try {
+      this.firebaseService.listImages().subscribe({
+        next: (realImages: any[]) => {
+          this.images = realImages.map(img => ({
+            ...img,
+            uploadedAt: new Date(img.uploadedAt).toLocaleDateString(),
+            aspectRatio: '4/3'
+          }));
+        }
+      });
+    } catch (error) {
+      console.error('Failed to load real images', error);
+    }
+  }
+
   ngOnInit(): void {
     this.statsService.recordVisit();
+    this.loadRealImages();
   }
 
   toggleTheme(): void {
@@ -457,6 +477,43 @@ export class AppComponent implements OnInit {
   triggerUpload(): void {
     this.statsService.recordClick();
     document.getElementById('fileInput')?.click();
+  }
+
+  uploadFile(file: File): void {
+    this.isUploading = true;
+    this.uploadProgress = 0;
+
+    this.firebaseService.uploadFile(file).subscribe({
+      next: (res: any) => {
+        const { progress, downloadUrl } = res;
+        this.uploadProgress = progress;
+        if (downloadUrl) {
+          // Add to gallery
+          const newImage: GalleryImage = {
+            id: Date.now().toString(),
+            name: file.name,
+            size: Math.round(file.size / 1024),
+            uploadedAt: 'Just now',
+            url: downloadUrl,
+            category: 'Photography',
+            dimensions: 'Unknown',
+            liked: false,
+            aspectRatio: '4/3'
+          };
+
+          this.images.unshift(newImage);
+          this.isUploading = false;
+          this.previewImage = null;
+          this.audioService.playSuccess();
+        }
+      },
+      error: (err) => {
+        this.isUploading = false;
+        this.previewImage = null;
+        alert(err.message || 'Upload failed');
+        this.audioService.playError();
+      }
+    });
   }
 
   handleFileSelect(event: Event): void {
@@ -481,39 +538,9 @@ export class AppComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = (e) => {
       this.previewImage = e.target?.result as string;
-      this.simulateUpload(file);
+      this.uploadFile(file);
     };
     reader.readAsDataURL(file);
-  }
-
-  simulateUpload(file: File): void {
-    this.isUploading = true;
-    this.uploadProgress = 0;
-
-    const interval = setInterval(() => {
-      this.uploadProgress += Math.random() * 20;
-      if (this.uploadProgress >= 100) {
-        this.uploadProgress = 100;
-        clearInterval(interval);
-
-        // Add to gallery
-        const newImage: GalleryImage = {
-          id: Date.now().toString(),
-          name: file.name,
-          size: Math.round(file.size / 1024),
-          uploadedAt: 'Just now',
-          url: this.previewImage!,
-          category: 'Photography',
-          dimensions: 'Unknown',
-          liked: false,
-          aspectRatio: '4/3'
-        };
-
-        this.images.unshift(newImage);
-        this.isUploading = false;
-        this.previewImage = null;
-      }
-    }, 200);
   }
 
   cancelUpload(): void {

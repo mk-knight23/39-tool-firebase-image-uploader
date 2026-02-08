@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, from, throwError, forkJoin } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { ImageAsset } from '../types/image';
 import { initializeApp } from 'firebase/app';
 import {
@@ -29,16 +29,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+import { getMetadata } from 'firebase/storage';
+
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
-  constructor() {}
+  constructor() { }
 
   /**
    * Upload a file to Firebase Storage
    */
   uploadFile(file: File, path: string = 'images'): Observable<{ progress: number; downloadUrl: string }> {
+    if (file.size > MAX_FILE_SIZE) {
+      return throwError(() => new Error('File size exceeds 10MB limit'));
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return throwError(() => new Error('Unsupported file type. Please upload an image (JPG, PNG, GIF, WebP)'));
+    }
+
     const filePath = `${path}/${Date.now()}_${file.name}`;
     const storageRef: StorageReference = ref(storage, filePath);
     const task: UploadTask = uploadBytesResumable(storageRef, file);
@@ -115,23 +126,26 @@ export class FirebaseService {
     const listRef: StorageReference = ref(storage, path);
 
     return from(listAll(listRef)).pipe(
-      map((result) => {
-        // Since we can't get metadata without additional calls,
-        // we'll return what we can
-        return result.items.map((item) => ({
-          id: item.name,
-          url: '', // Will be filled by caller
-          name: item.name,
-          size: 0,
-          type: 'image',
-          path: item.fullPath,
-          uploadedAt: new Date().toISOString(),
-          status: 'completed' as const
-        }));
+      switchMap(async (result) => {
+        const imagePromises = result.items.map(async (item) => {
+          const url = await getDownloadURL(item);
+          const metadata = await getMetadata(item);
+          return {
+            id: item.name,
+            url,
+            name: item.name,
+            size: Math.round((metadata.size || 0) / 1024),
+            type: metadata.contentType || 'image',
+            path: item.fullPath,
+            uploadedAt: metadata.timeCreated || new Date().toISOString(),
+            status: 'completed' as const
+          };
+        });
+        return Promise.all(imagePromises);
       }),
-      catchError((error) => {
-        console.error('Failed to list images:', error);
-        return throwError(() => new Error('Failed to list images: ' + error.message));
+      catchError(error => {
+        console.error('Failed to list images from Firebase:', error);
+        return throwError(() => new Error('Cloud storage access failed. Verify your Firebase configuration.'));
       })
     );
   }

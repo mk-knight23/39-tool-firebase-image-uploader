@@ -1,182 +1,90 @@
-# VisualVault — Firebase Image Uploader
+# Firebase Image Uploader
 
-A creative asset management platform with masonry gallery layout. Built with Angular 21 and Firebase, designed for visual professionals.
+A production-grade Angular Firebase image uploader with secure storage and real-time progress tracking.
 
-## Recent Upgrades (v2.1.0)
+![Firebase Image Uploader Banner](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80)
 
-### Iteration 1: Audit & Cleanup
-- Added "Made by MK — Musharraf Kazi" branding
-- Cleaned up author attribution format
-- Angular 21 structure verified
+## 🚀 Features
 
-### Iteration 2: Core Logic Upgrade
-- Documented multiple image selection capability
-- Enhanced feature documentation
+- **Secure Upload**: Firebase Storage integration with secure rules.
+- **Real-time Progress**: Upload progress tracking with visual feedback.
+- **Image Preview**: Instant preview of uploaded images.
+- **Type Validation**: Strict file type validation for images only.
+- **Size Limits**: Configurable file size limits (10MB default).
+- **Responsive UI**: Mobile-friendly interface with Tailwind CSS.
 
-### Iteration 3: UX / Feel / Humanization
-- Enhanced design system description
-- Documented creative aesthetic choices
-- Noted personality-focused animations
+## 🛠️ Tech Stack
 
-### Iteration 4: Accessibility & Polish
-- Added Accessibility section
-- Documented keyboard navigation
-- Noted ARIA and screen reader support
+- **Framework**: Angular 18+.
+- **Backend**: Firebase (Storage).
+- **Styling**: Tailwind CSS v3.
+- **Icons**: Lucide Angular.
+- **Build**: Angular CLI.
 
-### Iteration 5: Verification & Documentation
-- Added upgrade notes to README
-- Verified Angular 21 compatibility
-- Documented all improvements
-
----
-
-## Visual Gallery Theme
-
-This application features a premium **"Visual Gallery/Creator"** design system:
-- Light gray background with white cards featuring subtle, elegant shadows
-- Masonry-style responsive grid layout for optimal visual presentation
-- Large image previews with smooth hover interactions
-- Indigo and pink gradient accents for creative flair
-- Focus on visual content with minimal interface clutter
-
-## Features
-
-| Feature | Description |
-|---------|-------------|
-| **Drag & Drop Upload** | Elegant dropzone with gradient hover effects • **NEW: Multiple image selection** |
-| **Masonry Gallery** | Responsive column-based layout that adapts to screen size |
-| **Image Lightbox** | Full-screen preview with detailed metadata |
-| **Category Filtering** | Filter by Photography, Design, 3D Art, Vectors |
-| **Favorites System** | Like/unlike images with heart animations |
-| **Dark Mode** | Automatic theme switching with proper contrast |
-| **Search** | Real-time search through your visual library |
-| **Stats Dashboard** | Track assets, favorites, and storage usage |
-
-## Tech Stack
-
-- **Framework:** Angular 19 (Standalone Components, Signals)
-- **Styling:** Tailwind CSS v4 with custom design system
-- **Backend:** Firebase (Firestore, Storage, Auth ready)
-- **Icons:** Lucide Angular
-- **Typography:** Inter (body), Outfit (headings)
-
-## Design System
-
-This application follows a **Visual Gallery/Creator** aesthetic with personality:
-- Smooth hover animations on image cards with lift effect
-- Gradient accents (indigo to pink) for creative flair
-- Heart animation when favoriting images
-- Masonry layout that feels organic and curated
-- Generous white space for visual content to breathe
-
-See `design-system/MASTER.md` for complete design token documentation.
-
-### Color Palette
-```css
---gallery-primary: #6366f1;      /* Indigo */
---gallery-secondary: #ec4899;    /* Pink */
---gallery-accent: #14b8a6;       /* Teal */
-```
-
-### Key Components
-- `.gallery-card` - Image cards with hover lift effect
-- `.upload-zone` - Gradient-bordered drag & drop area
-- `.masonry-grid` - Responsive column layout
-- `.lightbox-backdrop` - Full-screen image preview modal
-
-## Quick Start
+## 📦 Setup & Installation
 
 ```bash
-# Install dependencies
+git clone <repo-url>
+cd 39-tool-firebase-image-uploader
 npm install
-
-# Start development server
-npm start
-
-# Build for production
-npm run build
+ng serve
 ```
 
-## Accessibility
+## 📐 Architecture
 
-- Keyboard navigation support throughout the gallery
-- ARIA labels on all interactive elements
-- Focus indicators on all focusable elements
-- High contrast ratios for visual clarity
-- Screen reader friendly image descriptions
+- **Components**: Upload component, Gallery component, Progress indicator.
+- **Services**: Firebase storage service for upload operations.
+- **Guards**: Route guards for protected pages.
 
-## Configuration
-
-1. Create `src/environments/environment.ts`:
-```typescript
-export const environment = {
-  production: false,
-  firebase: {
-    apiKey: 'your-api-key',
-    authDomain: 'your-project.firebaseapp.com',
-    projectId: 'your-project-id',
-    storageBucket: 'your-project.appspot.com',
-    messagingSenderId: '...',
-    appId: '...'
-  }
-};
-```
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── features/
-│   │   ├── uploader/      # Upload components
-│   │   └── gallery/       # Gallery components
-│   ├── services/          # Settings, stats, audio
-│   └── app.component.ts   # Main orchestration
-├── design-system/
-│   └── MASTER.md          # Design tokens
-└── styles.css             # Global styles
-```
-
-## Deployment
-
-This project is configured for deployment on three platforms:
-
-### GitHub Pages
-- **Workflow**: `.github/workflows/deploy.yml`
-- **Build Command**: `npm run build -- --base-href=/39-tool-firebase-image-uploader/`
-- **Output Directory**: `dist/firebase-uploader/browser`
-- **Trigger**: Push to `main` branch
-- **Action**: `actions/deploy-page@v4`
-
-### Vercel
-- **Config**: `vercel.json`
-- **Framework**: Angular
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist/firebase-uploader/browser`
-- **Rewrites**: SPA fallback to `/index.html`
-
-### Netlify
-- **Config**: `netlify.toml`
-- **Build Command**: `npm run build`
-- **Publish Directory**: `dist/firebase-uploader/browser`
-- **Redirects**: All paths to `/index.html` (SPA support)
+## 🚀 Deployment
 
 ### Firebase Hosting
-- **Config**: `firebase.json`
-- **Command**: `firebase deploy` or `npm run deploy`
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init
+firebase deploy
+```
+
+### Netlify
+
+[![Netlify Deploy](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/mk-knight23/39-tool-firebase-image-uploader)
+
+### Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mk-knight23/39-tool-firebase-image-uploader)
+
+## 📁 Environment Variables
+
+Create a `.env` file:
+
+```env
+FIREBASE_API_KEY=your-api-key
+FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+FIREBASE_APP_ID=your-app-id
+MAX_FILE_SIZE=10485760
+ALLOWED_TYPES=image/jpeg,image/png,image/gif,image/webp
+```
+
+## 🖼️ Screenshots
+
+### Upload Interface
+![Upload Interface](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80)
+
+### Gallery View
+![Gallery View](https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&w=800&q=80)
+
+### Progress Indicator
+![Progress Indicator](https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80)
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-## Live Links
-
-| Platform | URL |
-|----------|-----|
-| **GitHub Pages** | https://mk-knight23.github.io/39-tool-firebase-image-uploader/ |
-| **Vercel** | https://39-tool-firebase-image-uploader.vercel.app/ |
-| **Netlify** | https://39-tool-firebase-image-uploader.netlify.app/ |
-
----
-
-**Theme:** Visual Gallery/Creator
-**Made by:** MK — Musharraf Kazi
-**License:** MIT
+Made by [Musharraf Kazi](https://github.com/mk-knight23)
