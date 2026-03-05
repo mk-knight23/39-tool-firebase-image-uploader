@@ -1,0 +1,15 @@
+# GitHub Pages Configuration
+theme: jekyll-theme-cayman
+title: Image Upload Portal
+description: Documentation for 39-tool-firebase-image-uploader
+baseurl: /39-tool-firebase-image-uploader
+url: https://mk-knight23.github.io
+
+# Navigation
+nav:
+  - title: Home
+    url: /
+  - title: Architecture
+    url: /architecture/
+  - title: API
+    url: /api/
