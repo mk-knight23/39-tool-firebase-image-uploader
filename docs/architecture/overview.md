@@ -1,10 +1,6 @@
-# Architecture: Image Upload Portal
+# Architecture Overview
 
-## Overview
-
-Image Upload Portal is a Tool built with Angular + Firebase.
-
-## System Architecture
+## System Design
 
 ```
 ┌─────────────────────────────────────────┐
@@ -19,32 +15,21 @@ Image Upload Portal is a Tool built with Angular + Firebase.
                    │
 ┌──────────────────▼──────────────────────┐
 │        APPLICATION LAYER                │
-│                 Angular                │
+│         Modern Frontend Stack          │
 └─────────────────────────────────────────┘
 ```
 
 ## Technology Stack
 
-### Frontend
-- Framework: Angular
+- Framework: Modern (React/Vue/Angular)
 - Build: Vite
 - Styling: Tailwind CSS
 - Language: TypeScript
-
-### CI/CD
-- Platform: GitHub Actions
-- Schedule: Every 6 hours
-- Security: Trivy, TruffleHog
-
-### Deployment
-- Primary: Vercel
-- Secondary: Netlify, Firebase, Cloudflare
 
 ## Security
 
 - Security headers on all platforms
 - Automated secret scanning
-- Dependency vulnerability checks
 - XSS protection
 
 ## Performance
@@ -52,4 +37,3 @@ Image Upload Portal is a Tool built with Angular + Firebase.
 - Optimized builds
 - CDN distribution
 - Caching strategies
-- Lazy loading
