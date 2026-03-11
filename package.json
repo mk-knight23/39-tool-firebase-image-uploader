@@ -2,6 +2,7 @@
   "name": "firebase-uploader",
   "version": "0.0.0",
   "scripts": {
+    "production": "npm run build && npm start",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
